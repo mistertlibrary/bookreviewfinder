@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Finding Book Reviews — West Essex High School Library</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --paper:        #F6F1E4;
+      --ink:          #1A1810;
+      --ink-body:     #2C2A22;
+      --ink-mid:      #5C5A52;
+      --ink-light:    #8C8A82;
+      --rule:         #B8B0A0;
+      --rule-heavy:   #3A3828;
+      --red:          #9B1520;
+      --flag-open:    #1B6038;
+      --flag-meter:   #7A4000;
+      --flag-db:      #1A3A6B;
+      --flag-campus:  #5A3B8C;
+      --font-mast:    'UnifrakturMaguntia', serif;
+      --font-head:    'Playfair Display', Georgia, serif;
+      --font-body:    'EB Garamond', Georgia, serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      font-size: 24px;
+      line-height: 1.65;
+      color: var(--ink-body);
+      background: var(--paper);
+    }
+
+    a {
+      color: var(--ink);
+      text-decoration: none;
+      border-bottom: 1px solid var(--ink);
+    }
+    a:hover { color: var(--red); border-bottom-color: var(--red); }
+
+    /* ═══ MASTHEAD ═══ */
+    .masthead {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.4rem 2rem 0;
+    }
+
+    .mast-rule-top {
+      border: none;
+      border-top: 4px solid var(--ink);
+      margin-bottom: 0.7rem;
+    }
+
+    .mast-name {
+      display: block;
+      font-family: var(--font-mast);
+      font-size: clamp(2.6rem, 5.8vw, 5.2rem);
+      color: var(--ink);
+      text-align: center;
+      line-height: 1;
+      padding-bottom: 0.2rem;
+    }
+
+    .mast-rule-double {
+      border: none;
+      height: 7px;
+      background:
+        linear-gradient(to bottom,
+          var(--ink) 0,    var(--ink) 2px,
+          transparent 2px, transparent 5px,
+          var(--ink) 5px,  var(--ink) 7px
+        );
+      margin: 0.45rem 0;
+    }
+
+    .mast-info {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0;
+      font-family: var(--font-body);
+      font-size: 15px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--ink-mid);
+      padding: 0.35rem 0 0.8rem;
+    }
+
+    .mast-info span {
+      padding: 0 1rem;
+    }
+
+    .mast-info span:not(:last-child) {
+      border-right: 1px solid var(--rule);
+    }
+
+    .mast-rule-bottom {
+      border: none;
+      border-top: 2px solid var(--ink);
+    }
+
+    /* ═══ TAB BAR ═══ */
+    .tab-bar {
+      background: var(--ink);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 3px solid var(--rule-heavy);
+    }
+
+    .tab-bar ul {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .tab-bar li button {
+      display: block;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -3px;
+      cursor: pointer;
+      color: #B8B4A8;
+      font-family: var(--font-body);
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.65rem 1.1rem;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+
+    .tab-bar li:not(:last-child) button {
+      border-right: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .tab-bar li button:hover {
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+    }
+
+    .tab-bar li button.active {
+      color: var(--paper);
+      border-bottom-color: var(--paper);
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* ═══ SECTION VISIBILITY ═══ */
+    section { display: none; }
+    section.active { display: block; }
+
+    /* ═══ MAIN ═══ */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 5rem;
+    }
+
+    section { margin-bottom: 3.5rem; }
+
+    /* ═══ SECTION HEAD ═══ */
+    .section-head {
+      border-top: 3px solid var(--ink);
+      padding-top: 0.5rem;
+      margin-bottom: 0.2rem;
+      text-align: center;
+    }
+
+    .section-num {
+      display: block;
+      font-family: var(--font-body);
+      font-size: 15px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.1rem;
+    }
+
+    .section-head h2 {
+      font-family: var(--font-head);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+
+    .section-rule {
+      border: none;
+      border-top: 1px solid var(--ink);
+      margin-top: 0.5rem;
+    }
+
+    .section-deck {
+      font-family: var(--font-body);
+      font-size: 24px;
+      font-style: italic;
+      color: var(--ink-mid);
+      max-width: 760px;
+      margin: 0.9rem auto 1.6rem;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* ═══ INTRO ═══ */
+    .intro-body {
+      font-size: 24px;
+      line-height: 1.72;
+      color: var(--ink-body);
+      max-width: 720px;
+      margin: 0 auto 1.1rem;
+    }
+
+    .intro-body:first-of-type::first-letter {
+      font-family: var(--font-head);
+      font-size: 5.2rem;
+      font-weight: 700;
+      line-height: 0.78;
+      float: left;
+      margin: 0.04em 0.06em 0 0;
+      color: var(--ink);
+    }
+
+    /* ═══ COMPARE BOX ═══ */
+    .compare-wrap {
+      border: 1px solid var(--rule-heavy);
+      margin: 1.8rem auto;
+      max-width: 820px;
+    }
+
+    .compare-flag {
+      background: var(--ink);
+      color: var(--paper);
+      text-align: center;
+      font-family: var(--font-body);
+      font-size: 15px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 0.3rem 1rem;
+    }
+
+    .compare-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .compare-col {
+      padding: 1.1rem 1.5rem;
+    }
+
+    .compare-col:first-child {
+      border-right: 1px solid var(--rule-heavy);
+    }
+
+    .compare-col h3 {
+      font-family: var(--font-head);
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
+      color: var(--ink);
+    }
+
+    .compare-col p {
+      font-size: 22px;
+      line-height: 1.6;
+      color: var(--ink-mid);
+    }
+
+    /* ═══ ACCESS KEY ═══ */
+    .access-key-wrap {
+      border: 1px solid var(--rule);
+      max-width: 520px;
+      margin: 1.6rem auto 0;
+    }
+
+    .access-key-flag {
+      background: var(--ink);
+      color: var(--paper);
+      text-align: center;
+      font-family: var(--font-body);
+      font-size: 15px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 0.3rem 1rem;
+    }
+
+    .access-key-body { padding: 0.7rem 1.2rem; }
+
+    .access-key-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.35rem 0;
+      font-size: 20px;
+      color: var(--ink-mid);
+    }
+
+    .access-key-row:not(:last-child) {
+      border-bottom: 1px solid var(--rule);
+    }
+
+    /* ═══ ACCESS FLAGS ═══ */
+    .flag {
+      display: inline-block;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.1rem 0.45rem;
+      border: 1px solid currentColor;
+      line-height: 1.5;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .flag-open    { color: var(--flag-open); }
+    .flag-metered { color: var(--flag-meter); }
+    .flag-database{ color: var(--flag-db); }
+    .flag-campus  { color: var(--flag-campus); }
+
+    /* ═══ SOURCE COLUMNS ═══ */
+    .source-columns {
+      column-count: 2;
+      column-gap: 3.2rem;
+      column-rule: 1px solid var(--rule);
+    }
+
+    .source-entry {
+      break-inside: avoid;
+      padding-bottom: 1.05rem;
+      margin-bottom: 1.05rem;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .source-entry:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .source-entry-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.6rem;
+      margin-bottom: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .source-name {
+      font-family: var(--font-head);
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+
+    .source-name a {
+      color: var(--ink);
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .source-name a:hover {
+      color: var(--red);
+      border-bottom-color: var(--red);
+    }
+
+    .source-desc {
+      font-size: 24px;
+      line-height: 1.62;
+      color: var(--ink-body);
+    }
+
+    .source-note {
+      display: block;
+      font-size: 20px;
+      font-style: italic;
+      color: var(--ink-mid);
+      margin-top: 0.4rem;
+    }
+
+    /* ═══ SECTION NOTE ═══ */
+    .section-note {
+      border-top: 2px solid var(--ink);
+      border-bottom: 1px solid var(--rule);
+      padding: 0.7rem 1rem;
+      margin-top: 1.5rem;
+      font-size: 22px;
+      color: var(--ink-mid);
+      line-height: 1.62;
+    }
+
+    /* ═══ DATABASES ═══ */
+    .db-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border: 1px solid var(--rule-heavy);
+    }
+
+    .db-entry {
+      padding: 1.2rem 1.4rem;
+    }
+
+    .db-entry:not(:last-child) {
+      border-right: 1px solid var(--rule-heavy);
+    }
+
+    .db-label {
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 0.3rem;
+    }
+
+    .db-entry h3 {
+      font-family: var(--font-head);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.45rem;
+    }
+
+    .db-entry h3 a {
+      color: var(--ink);
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .db-entry h3 a:hover {
+      color: var(--red);
+      border-bottom-color: var(--red);
+    }
+
+    .db-entry p {
+      font-size: 22px;
+      line-height: 1.6;
+      color: var(--ink-mid);
+    }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 820px) {
+      .source-columns { column-count: 1; }
+      .compare-cols   { grid-template-columns: 1fr; }
+      .compare-col:first-child { border-right: none; border-bottom: 1px solid var(--rule-heavy); }
+      .db-grid        { grid-template-columns: 1fr; }
+      .db-entry:not(:last-child) { border-right: none; border-bottom: 1px solid var(--rule-heavy); }
+    }
+
+    @media (max-width: 580px) {
+      .site-nav li a    { font-size: 13px; padding: 0.5rem 0.7rem; }
+      .mast-info        { font-size: 13px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="masthead">
+      <hr class="mast-rule-top">
+      <span class="mast-name">The West Essex Library Review</span>
+      <div class="mast-rule-double"></div>
+      <div class="mast-info">
+        <span>West Essex High School</span>
+        <span>A Research Guide</span>
+        <span>Finding Book Reviews</span>
+      </div>
+      <hr class="mast-rule-bottom">
+    </div>
+  </header>
+
+  <nav class="tab-bar" role="tablist" aria-label="Page sections">
+    <ul>
+      <li><button role="tab" data-tab="intro"      class="active">Introduction</button></li>
+      <li><button role="tab" data-tab="longform"           >Long-Form Journals</button></li>
+      <li><button role="tab" data-tab="magazines"          >Magazines</button></li>
+      <li><button role="tab" data-tab="newspapers"         >Newspapers</button></li>
+      <li><button role="tab" data-tab="trade"              >Trade Reviews</button></li>
+      <li><button role="tab" data-tab="databases"          >Databases</button></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <!-- INTRO -->
+    <section id="intro" class="active">
+      <div class="section-head">
+        <h2>What Makes a Review Useful for Research?</h2>
+        <hr class="section-rule">
+      </div>
+
+      <p class="intro-body">
+        Not all book reviews are the same. A Sunday newspaper notice, an essay in the
+        <em>New York Review of Books</em>, and a Kirkus trade notice are three different objects
+        serving three different purposes. For serious research, you need reviews that do more than
+        summarize: they should evaluate an argument, place a book in an intellectual context, and
+        give you enough critical purchase to read more carefully. Most of what you find on the first
+        page of a Google search will not do this. The sources here are organized to help you find
+        what will.
+      </p>
+
+      <p class="intro-body">
+        Most of the books you'll be researching were published between 1980 and 2010. Many of the
+        most substantial reviews appeared in print long before the open web existed. Start with
+        <strong>Academic Search Complete</strong>, <strong>Newspaper Source Plus</strong>, or
+        <strong>JSTOR</strong> before searching the open web: you will find fuller text, deeper
+        coverage of older issues, and no paywalls.
+      </p>
+
+      <div class="compare-wrap">
+        <div class="compare-flag">Two Kinds of Reviews</div>
+        <div class="compare-cols">
+          <div class="compare-col">
+            <h3>A trade notice: not what you want</h3>
+            <p>A 200-word Kirkus notice names the book's subject, sketches its argument, and records
+            a professional verdict. It locates a source. It does not help you understand or evaluate one.</p>
+          </div>
+          <div class="compare-col">
+            <h3>A substantial review: what you want</h3>
+            <p>A 2,000-word NYRB essay situates a book in its field, tests its argument against
+            competing works, and often advances a position of its own. It is, itself, a secondary
+            source worth citing.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="access-key-wrap">
+        <div class="access-key-flag">Access Key</div>
+        <div class="access-key-body">
+          <div class="access-key-row">
+            <span class="flag flag-open">Free</span>
+            <span>Available on the web, no account required</span>
+          </div>
+          <div class="access-key-row">
+            <span class="flag flag-metered">Metered</span>
+            <span>Limited free articles per month; use a library database</span>
+          </div>
+          <div class="access-key-row">
+            <span class="flag flag-database">Database</span>
+            <span>Subscription required; access through ASC, Newspaper Source Plus, or JSTOR</span>
+          </div>
+          <div class="access-key-row">
+            <span class="flag flag-campus">On Campus</span>
+            <span>Institutional access on the West Essex High School network</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- I. LONG-FORM JOURNALS -->
+    <section id="longform">
+      <div class="section-head">
+        <span class="section-num">Section I</span>
+        <h2>Long-Form Review Journals</h2>
+        <hr class="section-rule">
+      </div>
+      <p class="section-deck">These publications exist to publish extended critical reviews. A single piece may run 3,000 to 8,000 words. Start here and work outward.</p>
+
+      <div class="source-columns">
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.nybooks.com" target="_blank" rel="noopener">New York Review of Books</a></span>
+            <span class="flag flag-database">Database</span>
+          </div>
+          <p class="source-desc">The standard. Since 1963, the NYRB has published essay-length reviews by scholars, journalists, and intellectuals willing to actually argue with the books they cover. A review here is often a significant critical document in its own right. For nonfiction after 1980, start here.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.lrb.co.uk" target="_blank" rel="noopener">London Review of Books</a></span>
+            <span class="flag flag-database">Database</span>
+          </div>
+          <p class="source-desc">Founded 1979. The LRB has never mistaken concision for rigor: reviews are long, argumentative, and willing to use a book as occasion for writing a better one. Indispensable for anything with European dimensions, and a reliable corrective to American critical insularity.</p>
+          <span class="source-note">The website allows a small number of free reads before requiring a subscription. Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://lareviewofbooks.org" target="_blank" rel="noopener">Los Angeles Review of Books</a></span>
+            <span class="flag flag-open">Free</span>
+          </div>
+          <p class="source-desc">Open-access, founded 2011. Quality is uneven; the best pieces are excellent. Strongest on contemporary nonfiction, cultural criticism, and literature from outside the American mainstream. Most useful for books published after 2000.</p>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.the-tls.com" target="_blank" rel="noopener">Times Literary Supplement</a></span>
+            <span class="flag flag-database">Database</span>
+          </div>
+          <p class="source-desc">The oldest continuously published literary review in English, founded 1902. Reviewers are specialists; the prose is authoritative without being academic. Particularly strong on history, philosophy, and biography. Coverage spans the full period you are researching.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.bostonreview.net" target="_blank" rel="noopener">Boston Review</a></span>
+            <span class="flag flag-open">Free</span>
+          </div>
+          <p class="source-desc">Published at MIT since 1975. The forum format: a lead essay followed by responses, then a reply. It is the best structure in American criticism for books that produce genuine disagreement. Especially valuable for contested nonfiction in politics and social thought. Much of the archive is free.</p>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.bookforum.com" target="_blank" rel="noopener">Bookforum</a></span>
+            <span class="flag flag-open">Free</span>
+          </div>
+          <p class="source-desc">Serious criticism since 1994, with a sensibility less genteel than the NYRB and less strenuous than the LRB. Strong on art, politics, and ideas. The archive is free and worth searching for any book published from the 1990s to the present.</p>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://bookmarks.reviews" target="_blank" rel="noopener">Bookmarks</a></span>
+            <span class="flag flag-open">Free</span>
+          </div>
+          <p class="source-desc">An aggregator, not a journal. Collects reviews from dozens of publications into a searchable database organized by title and author. Use it to find where a book was reviewed; find the full text elsewhere.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- II. MAGAZINES -->
+    <section id="magazines">
+      <div class="section-head">
+        <span class="section-num">Section II</span>
+        <h2>General-Interest Magazines</h2>
+        <hr class="section-rule">
+      </div>
+      <p class="section-deck">Some of the sharpest book criticism in print appears in general magazines, not literary journals. The best pieces run over 1,000 words and read as independent essays.</p>
+
+      <div class="source-columns">
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.newyorker.com/books" target="_blank" rel="noopener">The New Yorker</a></span>
+            <span class="flag flag-metered">Metered</span>
+          </div>
+          <p class="source-desc">The prose is rarely in a hurry, and neither are the reviews. Criticism that treats a book as occasion for wider argument. Strong on biography, history, and science writing from the 1980s onward.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.theatlantic.com/books" target="_blank" rel="noopener">The Atlantic</a></span>
+            <span class="flag flag-campus">On Campus</span>
+          </div>
+          <p class="source-desc">One of the oldest American magazines, founded 1857. At its best, The Atlantic uses recent nonfiction to anchor larger arguments about American politics and intellectual life. Criticism tends toward the essayistic.</p>
+          <span class="source-note">Full access on the West Essex High School network. Off-campus access is metered. Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://harpers.org" target="_blank" rel="noopener">Harper's Magazine</a></span>
+            <span class="flag flag-database">Database</span>
+          </div>
+          <p class="source-desc">Contrarian and demanding. The "Readings" section, a collage of primary sources organized around a theme, can provide documentary context for books you're researching. Strong on politics, history, and culture from the 1980s onward.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://newrepublic.com/books" target="_blank" rel="noopener">The New Republic</a></span>
+            <span class="flag flag-metered">Metered</span>
+          </div>
+          <p class="source-desc">Founded 1914, with a long tradition of serious book criticism. Most valuable for nonfiction from the 1980s and 1990s, when the magazine was at its most intellectually combative.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.thenation.com/books-and-the-arts/" target="_blank" rel="noopener">The Nation</a></span>
+            <span class="flag flag-metered">Metered</span>
+          </div>
+          <p class="source-desc">America's oldest weekly, founded 1865. Indispensable for nonfiction on labor, social movements, and political history. Reviewers take sides; that's part of the point.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.newstatesman.com/culture/books" target="_blank" rel="noopener">New Statesman</a></span>
+            <span class="flag flag-database">Database</span>
+          </div>
+          <p class="source-desc">British, left-liberal, founded 1913. An underused resource for American students. Strong on international affairs and European history; gives you a non-American angle on books that U.S. publications tend to review from one direction only.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://theamericanscholar.org" target="_blank" rel="noopener">The American Scholar</a></span>
+            <span class="flag flag-open">Free</span>
+          </div>
+          <p class="source-desc">Phi Beta Kappa's quarterly since 1932. Generalist, measured, actually readable. Most content is free.</p>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.vulture.com/books" target="_blank" rel="noopener">Vulture</a></span>
+            <span class="flag flag-open">Free</span>
+          </div>
+          <p class="source-desc">New York Magazine's culture vertical. Reviews are shorter and less analytical than the journals, but Vulture takes books seriously and is unusually good at situating them in the cultural moment. Most useful for nonfiction published after 2000.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- III. NEWSPAPERS -->
+    <section id="newspapers">
+      <div class="section-head">
+        <span class="section-num">Section III</span>
+        <h2>Newspaper Book Sections</h2>
+        <hr class="section-rule">
+      </div>
+      <p class="section-deck">Newspaper reviews range from brief notices to extended critical essays. The longer pieces are useful for research; the shorter ones document initial reception.</p>
+
+      <div class="source-columns">
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.nytimes.com/section/books/review" target="_blank" rel="noopener">New York Times Book Review</a></span>
+            <span class="flag flag-database">Database</span>
+          </div>
+          <p class="source-desc">The most widely read book review publication in the country, in continuous publication since 1896. Range is enormous; quality varies. The first and most reliable record of how a book entered American public conversation. The website requires a personal subscription: use your library databases to access the archive.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.theguardian.com/books" target="_blank" rel="noopener">The Guardian Books</a></span>
+            <span class="flag flag-open">Free</span>
+          </div>
+          <p class="source-desc">The best freely accessible review archive on the web. Internationally minded and thorough. Often more attentive than American sources to books with global dimensions. No subscription required.</p>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.washingtonpost.com/entertainment/books/" target="_blank" rel="noopener">Washington Post Books</a></span>
+            <span class="flag flag-metered">Metered</span>
+          </div>
+          <p class="source-desc">The Post eliminated its standalone Book World section in early 2026, but book coverage continues. The archive — strong on American political history, policy, and biography — remains accessible. Older issues are more reliably reached through library databases.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.latimes.com/entertainment-arts/books/" target="_blank" rel="noopener">Los Angeles Times Books</a></span>
+            <span class="flag flag-metered">Metered</span>
+          </div>
+          <p class="source-desc">One of the strongest regional newspaper book sections in the country, with particular depth in American West history, Latinx literature, and cultural nonfiction. The Sunday section from the 1980s through the 2000s is worth consulting.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.npr.org/books/" target="_blank" rel="noopener">NPR Books</a></span>
+            <span class="flag flag-open">Free</span>
+          </div>
+          <p class="source-desc">Reviews and author interviews, freely available. Less analytically demanding than the journals, but accurate about reception and cultural moment. A practical starting point for books published after 2000.</p>
+        </div>
+
+      </div>
+
+      <div class="section-note">
+        <strong>A note on newspaper reviews:</strong> Written on deadline for general readers, newspaper reviews establish reception; they do not constitute analysis. They are most useful for documenting how a book was initially received. Pair one with a longer journal piece.
+      </div>
+    </section>
+
+    <!-- IV. TRADE -->
+    <section id="trade">
+      <div class="section-head">
+        <span class="section-num">Section IV</span>
+        <h2>Trade &amp; Professional Reviews</h2>
+        <hr class="section-rule">
+      </div>
+      <p class="section-deck">These publications serve the book industry. Their usefulness for research is narrow and specific.</p>
+
+      <div class="section-note" style="margin-bottom: 1.6rem;">
+        <strong>Read this before using these sources.</strong> Trade reviews are pre-publication notices, typically 150 to 300 words, written anonymously for buyers rather than readers. They confirm a book's subject, scope, and publisher, and they record whether industry professionals considered it notable. They cannot tell you how a book was received by scholars, critics, or the reading public. Do not cite them as evidence of a book's intellectual significance. Use them to identify and verify sources; then find a longer review elsewhere on this page.
+      </div>
+
+      <div class="source-columns">
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.kirkusreviews.com" target="_blank" rel="noopener">Kirkus Reviews</a></span>
+            <span class="flag flag-database">Database</span>
+          </div>
+          <p class="source-desc">Anonymous pre-publication notices of 200 to 300 words, written for booksellers and librarians since 1933. Reliable for confirming publication details. Not a substitute for criticism.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.publishersweekly.com" target="_blank" rel="noopener">Publishers Weekly</a></span>
+            <span class="flag flag-database">Database</span>
+          </div>
+          <p class="source-desc">The industry's trade journal since 1872. Pre-publication, anonymous, written for buyers. Starred reviews flag titles considered especially notable. Not a substitute for criticism.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+        <div class="source-entry">
+          <div class="source-entry-head">
+            <span class="source-name"><a href="https://www.libraryjournal.com" target="_blank" rel="noopener">Library Journal</a></span>
+            <span class="flag flag-database">Database</span>
+          </div>
+          <p class="source-desc">Written by librarians for collection development. Reviews often cite comparable titles, which can help identify related works. Still a pre-publication notice, not criticism.</p>
+          <span class="source-note">Talk to Mr. T if you need help accessing an article you've located.</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- V. DATABASES -->
+    <section id="databases">
+      <div class="section-head">
+        <span class="section-num">Section V</span>
+        <h2>Databases</h2>
+        <hr class="section-rule">
+      </div>
+      <p class="section-deck">Start here for anything paywalled or from older print issues.</p>
+
+      <div class="db-grid">
+
+        <div class="db-entry">
+          <div class="db-label">EBSCO</div>
+          <h3><a href="https://research.ebsco.com/c/t3bsam?db=a9h" target="_blank" rel="noopener">Academic Search Complete</a></h3>
+          <p>A broad, multidisciplinary full-text database covering thousands of periodicals. A strong starting point for reviews from general-interest magazines and literary journals.</p>
+        </div>
+
+        <div class="db-entry">
+          <div class="db-label">EBSCO</div>
+          <h3><a href="https://research.ebsco.com/c/t3bsam?db=n5h" target="_blank" rel="noopener">Newspaper Source Plus</a></h3>
+          <p>Full-text access to hundreds of regional, national, and international newspapers. The most reliable route to newspaper book coverage, including older issues not accessible on publication websites.</p>
+        </div>
+
+        <div class="db-entry">
+          <div class="db-label">ITHAKA</div>
+          <h3><a href="https://www.jstor.org" target="_blank" rel="noopener">JSTOR</a></h3>
+          <p>Strongest for reviews in academic journals and older issues of intellectual magazines. The "moving wall" embargoes very recent issues, typically 3 to 5 years; this is rarely an obstacle for books published before 2010.</p>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+  <script>
+    (function () {
+      const buttons = document.querySelectorAll('.tab-bar button[data-tab]');
+      const sections = document.querySelectorAll('main section');
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const target = btn.dataset.tab;
+
+          buttons.forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+
+          sections.forEach(function (s) {
+            s.classList.toggle('active', s.id === target);
+          });
+
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>
